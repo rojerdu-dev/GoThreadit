@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type Thread struct {
 	ID          uuid.UUID `db:"id"`
 	Title       string    `db:"title"`
-	Descripting string    `db:"description"`
+	Description string    `db:"description"`
 }
 
 type Post struct {
