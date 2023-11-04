@@ -20,6 +20,7 @@ func NewHandler(store gothreadit.Store) *Handler {
 		r.Get("/", h.ThreadsList())
 		r.Get("/new", h.ThreadsCreate())
 		r.Post("/", h.ThreadsStore())
+		r.Post("/{id}", h.ThreadsDelete())
 	})
 
 	return h
@@ -36,6 +37,11 @@ const threadsListHTML = `
 {{range .Threads}}
 	<dt><strong>{{.Title}}</strong></dt>
 	<dd>{{.Description}}</dd>
+	<dd>
+		<form action="/threads/{{.ID}}/delete" method="POST">
+			<button type="submit">Delete</button>
+		</form>
+	</dd>
 {{end}}
 </dl>
 <a href="/threads/new/>Create thread</a>"
@@ -93,5 +99,23 @@ func (h *Handler) ThreadsStore() http.HandlerFunc {
 
 		http.Redirect(w, r, "/threads", http.StatusFound)
 
+	}
+}
+
+func (h *Handler) ThreadsDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		err = h.store.DeleteThread(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/threads", http.StatusFound)
 	}
 }
