@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/rojerdu-dev/gothreadit"
 )
 
 func NewStore(dataSourceName string) (*Store, error) {
@@ -18,14 +17,14 @@ func NewStore(dataSourceName string) (*Store, error) {
 	}
 
 	return &Store{
-		NewThreadStore(db),
-		NewPostStore(db),
-		NewCommentStore(db),
+		&ThreadStore{db},
+		&PostStore{db},
+		&CommentStore{db},
 	}, nil
 }
 
 type Store struct {
-	gothreadit.ThreadStore
-	gothreadit.PostStore
-	gothreadit.CommentStore
+	*ThreadStore
+	*PostStore
+	*CommentStore
 }

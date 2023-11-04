@@ -7,12 +7,6 @@ import (
 	"github.com/rojerdu-dev/gothreadit"
 )
 
-func NewCommentStore(db *sqlx.DB) *CommentStore {
-	return &CommentStore{
-		DB: db,
-	}
-}
-
 type CommentStore struct {
 	*sqlx.DB
 }
@@ -26,7 +20,7 @@ func (cs *CommentStore) Comment(id uuid.UUID) (gothreadit.Comment, error) {
 	return c, nil
 }
 
-func (cs *CommentStore) CommentByPost(postID uuid.UUID) ([]gothreadit.Comment, error) {
+func (cs *CommentStore) CommentsByPost(postID uuid.UUID) ([]gothreadit.Comment, error) {
 	var cc []gothreadit.Comment
 	err := cs.Select(&cc, `SELECT * FROM comments WHERE post_id = $1`, postID)
 	if err != nil {
@@ -49,7 +43,7 @@ func (cs *CommentStore) CreateComment(c *gothreadit.Comment) error {
 }
 
 func (s *CommentStore) UpdateComment(c *gothreadit.Comment) error {
-	err := s.Get(c, `UPDATE comments SET post_id = $1, content = $2, votes = $3 WHERE id = $4 RETRUNING *`,
+	err := s.Get(c, `UPDATE comments SET post_id = $1, content = $2, votes = $3 WHERE id = $4 RETURNING *`,
 		c.PostID,
 		c.Content,
 		c.Votes,

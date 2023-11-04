@@ -1,11 +1,13 @@
 .PHONY: postgres adminer migrate
 
 postgres:
-	docker run --rm -ti --network host -e POSTGRES_PASSWORD=secret postgres
+	docker run --name some-postgres -p 5432:5432 -e POSTGRES_PASSWORD=pass -d postgres
 
 adminer:
 	docker run --rm -ti --network host adminer
 
 migrate:
-	migrate -source file://migrations -database postgres://postgres:secret@localhost/postgres?sslmode=disable up
+	migrate -source file://migrations -database postgres://postgres:pass@127.0.0.1:5432?sslmode=disable up
 
+migrate-down:
+	migrate -source file://migrations -database postgres://postgres:pass@127.0.0.1:5432?sslmode=disable down
