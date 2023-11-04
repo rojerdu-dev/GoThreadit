@@ -17,10 +17,10 @@ type Post struct {
 }
 
 type Comment struct {
-	ID      uudid.UUID `db:"id"`
-	PostID  uudid.UUID `db:"post_id"`
-	Content string     `db:"string"`
-	Votes   int        `db:"votes"`
+	ID      uuid.UUID `db:"id"`
+	PostID  uuid.UUID `db:"post_id"`
+	Content string    `db:"string"`
+	Votes   int       `db:"votes"`
 }
 
 type ThreadStore interface {
@@ -33,7 +33,7 @@ type ThreadStore interface {
 
 type PostStore interface {
 	Post(id uuid.UUID) (Post, error)
-	PostsByThread() ([]Post, error)
+	PostsByThread(threadID uuid.UUID) ([]Post, error)
 	CreatePost(p *Post) error
 	UpdatePost(p *Post) error
 	DeletePost(id uuid.UUID) error
@@ -41,9 +41,9 @@ type PostStore interface {
 
 type CommentStore interface {
 	Comment(id uuid.UUID) (Comment, error)
-	CommentsByPost() ([]Comment, error)
-	CreateComment(p *Post) error
-	UpdateComment(p *Post) error
+	CommentsByPost(postID uuid.UUID) ([]Comment, error)
+	CreateComment(C *Comment) error
+	UpdateComment(c *Comment) error
 	DeleteComment(id uuid.UUID) error
 }
 

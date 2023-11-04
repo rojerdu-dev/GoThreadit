@@ -7,12 +7,6 @@ import (
 	"github.com/rojerdu-dev/gothreadit"
 )
 
-func NewThreadStore(db *sqlx.DB) *ThreadStore {
-	return &ThreadStore{
-		DB: db,
-	}
-}
-
 type ThreadStore struct {
 	*sqlx.DB
 }
