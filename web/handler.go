@@ -23,6 +23,32 @@ func NewHandler(store gothreadit.Store) *Handler {
 		r.Post("/{id}", h.ThreadsDelete())
 	})
 
+	h.Get("/html", func(w http.ResponseWriter, r *http.Request) {
+		//t := template.Must(template.New("layout.html").ParseGlob("templates/includes/*.html"))
+		t := template.Must(template.New("layout.html").ParseGlob("templates/includes/*.html"))
+		t = template.Must(t.ParseFiles("templates/layout.html", "templates/childtemplate.html"))
+
+		type params struct {
+			Title   string
+			Text    string
+			Lines   []string
+			Number1 int
+			Number2 int
+		}
+
+		t.Execute(w, params{
+			"Reddit Clone",
+			"Welcome to Go ThreadIt Reddit Clone",
+			[]string{
+				"Line1",
+				"Line2",
+				"Line3",
+			},
+			49,
+			53,
+		})
+	})
+
 	return h
 }
 
