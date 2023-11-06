@@ -16,11 +16,17 @@ func NewHandler(store gothreadit.Store) *Handler {
 	}
 
 	h.Use(middleware.Logger)
+
+	h.Get("/", h.Home())
 	h.Route("/threads", func(r chi.Router) {
 		r.Get("/", h.ThreadsList())
 		r.Get("/new", h.ThreadsCreate())
 		r.Post("/", h.ThreadsStore())
+		r.Get("/{id}", h.ThreadsShow())
 		r.Post("/{id}", h.ThreadsDelete())
+		r.Get("{id}/new", h.PostsCreate())
+		r.Post("{id}", h.PostsStore())
+		r.Get("{threadID}/{postID}", h.PostsShow())
 	})
 
 	h.Get("/html", func(w http.ResponseWriter, r *http.Request) {
@@ -57,6 +63,13 @@ type Handler struct {
 	store gothreadit.Store
 }
 
+func (h *Handler) Home() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
 func (h *Handler) ThreadsList() http.HandlerFunc {
 	type data struct {
 		Threads []gothreadit.Thread
@@ -74,6 +87,13 @@ func (h *Handler) ThreadsList() http.HandlerFunc {
 
 func (h *Handler) ThreadsCreate() http.HandlerFunc {
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/thread_create.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
+func (h *Handler) ThreadsShow() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/thead.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, nil)
 	}
@@ -114,5 +134,39 @@ func (h *Handler) ThreadsDelete() http.HandlerFunc {
 		}
 
 		http.Redirect(w, r, "/threads", http.StatusFound)
+	}
+}
+
+func (h *Handler) PostsCreate() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/post_create.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
+func (h *Handler) PostsShow() http.HandlerFunc {
+	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/post.html"))
+	return func(w http.ResponseWriter, r *http.Request) {
+		tmpl.Execute(w, nil)
+	}
+}
+
+func (h *Handler) PostsStore() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title := r.FormValue("title")
+		description := r.FormValue("description")
+
+		err := h.store.CreateThread(&gothreadit.Thread{
+			uuid.New(),
+			title,
+			description,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/threads", http.StatusFound)
+
 	}
 }
