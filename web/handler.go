@@ -29,6 +29,7 @@ func NewHandler(store gothreadit.Store) *Handler {
 		r.Get("/{threadID}/{postID}", h.PostsShow())
 		r.Post("/{threadID}/{postID}", h.CommentsStore())
 	})
+	h.Get("/comments/{id}/vote", h.CommentsVote())
 
 	h.Get("/html", func(w http.ResponseWriter, r *http.Request) {
 		t := template.Must(template.New("layout.html").ParseGlob("templates/includes/*.html"))
@@ -284,6 +285,39 @@ func (h *Handler) CommentsStore() http.HandlerFunc {
 			Content: content,
 		}
 		err = h.store.CreateComment(c)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		http.Redirect(w, r, r.Referer(), http.StatusFound)
+	}
+}
+
+func (h *Handler) CommentsVote() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		c, err := h.store.Comment(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		dir := r.URL.Query().Get("dir")
+		if dir == "up" {
+			c.Votes++
+		} else if dir == "down" {
+			c.Votes--
+		}
+
+		err = h.store.UpdateComment(&c)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
