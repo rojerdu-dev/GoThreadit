@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
@@ -9,18 +10,20 @@ import (
 	"net/http"
 )
 
-func NewHandler(store gothreadit.Store, csrfKey []byte) *Handler {
+func NewHandler(store gothreadit.Store, sessions *scs.SessionManager, csrfKey []byte) *Handler {
 	h := &Handler{
-		Mux:   chi.NewMux(),
-		store: store,
+		Mux:      chi.NewMux(),
+		store:    store,
+		sessions: sessions,
 	}
 
-	threads := ThreadHandler{store}
-	posts := PostHandler{store}
-	comments := CommentsHandler{store}
+	threads := ThreadHandler{store, sessions}
+	posts := PostHandler{store, sessions}
+	comments := CommentsHandler{store, sessions}
 
 	h.Use(middleware.Logger)
 	h.Use(csrf.Protect(csrfKey, csrf.Secure(false)))
+	h.Use(sessions.LoadAndSave)
 
 	h.Get("/", h.Home())
 	h.Route("/threads", func(r chi.Router) {
@@ -67,7 +70,9 @@ func NewHandler(store gothreadit.Store, csrfKey []byte) *Handler {
 
 type Handler struct {
 	*chi.Mux
-	store gothreadit.Store
+
+	store    gothreadit.Store
+	sessions *scs.SessionManager
 }
 
 func (h *Handler) Home() http.HandlerFunc {

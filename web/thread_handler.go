@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
@@ -10,7 +11,8 @@ import (
 )
 
 type ThreadHandler struct {
-	store gothreadit.Store
+	store    gothreadit.Store
+	sessions *scs.SessionManager
 }
 
 // List
