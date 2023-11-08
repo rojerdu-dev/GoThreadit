@@ -27,6 +27,7 @@ func NewHandler(store gothreadit.Store) *Handler {
 		r.Get("/{id}/new", h.PostsCreate())
 		r.Post("/{id}", h.PostsStore())
 		r.Get("/{threadID}/{postID}", h.PostsShow())
+		r.Post("/{threadID}/{postID}", h.CommentsStore())
 	})
 
 	h.Get("/html", func(w http.ResponseWriter, r *http.Request) {
@@ -263,5 +264,31 @@ func (h *Handler) PostsStore() http.HandlerFunc {
 		}
 
 		http.Redirect(w, r, "/threads", http.StatusFound)
+	}
+}
+
+func (h *Handler) CommentsStore() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		content := r.FormValue("content")
+		idStr := chi.URLParam(r, "PostID")
+
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		c := &gothreadit.Comment{
+			ID:      uuid.New(),
+			PostID:  id,
+			Content: content,
+		}
+		err = h.store.CreateComment(c)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		http.Redirect(w, r, r.Referer(), http.StatusFound)
 	}
 }
