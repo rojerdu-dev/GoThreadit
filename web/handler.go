@@ -24,9 +24,9 @@ func NewHandler(store gothreadit.Store) *Handler {
 		r.Post("/", h.ThreadsStore())
 		r.Get("/{id}", h.ThreadsShow())
 		r.Post("/{id}", h.ThreadsDelete())
-		r.Get("{id}/new", h.PostsCreate())
-		r.Post("{id}", h.PostsStore())
-		r.Get("{threadID}/{postID}", h.PostsShow())
+		r.Get("/{id}/new", h.PostsCreate())
+		r.Post("/{id}", h.PostsStore())
+		r.Get("/{threadID}/{postID}", h.PostsShow())
 	})
 
 	h.Get("/html", func(w http.ResponseWriter, r *http.Request) {
@@ -182,8 +182,9 @@ func (h *Handler) PostsCreate() http.HandlerFunc {
 
 func (h *Handler) PostsShow() http.HandlerFunc {
 	type data struct {
-		Thread gothreadit.Thread
-		Post   gothreadit.Post
+		Thread   gothreadit.Thread
+		Post     gothreadit.Post
+		Comments []gothreadit.Comment
 	}
 
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/post.html"))
@@ -209,13 +210,23 @@ func (h *Handler) PostsShow() http.HandlerFunc {
 			return
 		}
 
+		cc, err := h.store.CommentsByPost(p.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		t, err := h.store.Thread(threadID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		tmpl.Execute(w, data{t, p})
+		tmpl.Execute(w, data{
+			Thread:   t,
+			Post:     p,
+			Comments: cc,
+		})
 	}
 }
 
