@@ -8,6 +8,8 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/go-chi/chi/v5 v5.0.10 // indirect
 	github.com/google/uuid v1.4.0 // indirect
+	github.com/gorilla/csrf v1.7.2 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/lib/pq v1.10.9 // indirect
