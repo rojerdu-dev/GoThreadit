@@ -3,7 +3,9 @@ package server
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
 	"github.com/rojerdu-dev/gothreadit"
+	"html/template"
 	"net/http"
 )
 
@@ -18,6 +20,7 @@ type PostHandler struct {
 
 func (ph *PostHandler) Create() http.HandlerFunc {
 	type data struct {
+		CSRF   template.HTML
 		Thread gothreadit.Thread
 	}
 
@@ -37,12 +40,13 @@ func (ph *PostHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		tmpl.Execute(w, data{t})
+		tmpl.Execute(w, data{csrf.TemplateField(r), t})
 	}
 }
 
 func (ph *PostHandler) Show() http.HandlerFunc {
 	type data struct {
+		CSRF     template.HTML
 		Thread   gothreadit.Thread
 		Post     gothreadit.Post
 		Comments []gothreadit.Comment
@@ -84,6 +88,7 @@ func (ph *PostHandler) Show() http.HandlerFunc {
 		}
 
 		tmpl.Execute(w, data{
+			CSRF:     csrf.TemplateField(r),
 			Thread:   t,
 			Post:     p,
 			Comments: cc,

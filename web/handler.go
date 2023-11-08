@@ -3,12 +3,13 @@ package server
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 	"github.com/rojerdu-dev/gothreadit"
 	"html/template"
 	"net/http"
 )
 
-func NewHandler(store gothreadit.Store) *Handler {
+func NewHandler(store gothreadit.Store, csrfKey []byte) *Handler {
 	h := &Handler{
 		Mux:   chi.NewMux(),
 		store: store,
@@ -19,6 +20,7 @@ func NewHandler(store gothreadit.Store) *Handler {
 	comments := CommentsHandler{store}
 
 	h.Use(middleware.Logger)
+	h.Use(csrf.Protect(csrfKey, csrf.Secure(false)))
 
 	h.Get("/", h.Home())
 	h.Route("/threads", func(r chi.Router) {
