@@ -3,11 +3,15 @@ module github.com/rojerdu-dev/gothreadit
 go 1.21
 
 require (
+	github.com/alexedwards/scs/postgresstore v0.0.0-20231022164606-84bd122bd881 // indirect
+	github.com/alexedwards/scs/v2 v2.6.0 // indirect
 	github.com/cespare/reflex v0.3.1 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/go-chi/chi/v5 v5.0.10 // indirect
 	github.com/google/uuid v1.4.0 // indirect
+	github.com/gorilla/csrf v1.7.2 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/lib/pq v1.10.9 // indirect
