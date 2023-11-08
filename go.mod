@@ -3,6 +3,7 @@ module github.com/rojerdu-dev/gothreadit
 go 1.21
 
 require (
+	github.com/alexedwards/scs/v2 v2.6.0 // indirect
 	github.com/cespare/reflex v0.3.1 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
