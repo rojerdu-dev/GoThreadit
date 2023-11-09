@@ -8,11 +8,19 @@ import (
 )
 
 func main() {
-	store, err := postgres.NewStore("postgres://postgres:pass@127.0.0.1:5432?sslmode=disable")
+	var dsn = "postgres://postgres:pass@127.0.0.1:5432?sslmode=disable"
+
+	store, err := postgres.NewStore(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	h := web.NewHandler(store)
+	sessions, err := web.NewSessionManager(dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	csrfKey := []byte("01234567890123456789012345678901")
+	h := web.NewHandler(store, sessions, csrfKey)
 	http.ListenAndServe(":3000", h)
 }

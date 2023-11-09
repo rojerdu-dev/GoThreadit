@@ -16,7 +16,6 @@ func NewHandler(store gothreadit.Store, sessions *scs.SessionManager, csrfKey []
 		store:    store,
 		sessions: sessions,
 	}
-
 	threads := ThreadHandler{store, sessions}
 	posts := PostHandler{store, sessions}
 	comments := CommentsHandler{store, sessions}
