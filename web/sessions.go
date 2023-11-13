@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"database/sql"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
@@ -16,4 +17,24 @@ func NewSessionManager(dataSourceName string) (*scs.SessionManager, error) {
 	sessions.Store = postgresstore.New(db)
 
 	return sessions, nil
+}
+
+type SessionData struct {
+	FlashMessage string
+	Form         interface{}
+	// UserID uuid.UUID
+}
+
+func GetSessionData(session *scs.SessionManager, ctx context.Context) SessionData {
+	var data SessionData
+
+	data.FlashMessage = session.PopString(ctx, "flash")
+	// data.UserID, _ = session.Get(ctx, "user_id").(uuid.UUID)
+
+	data.Form = session.Pop(ctx, "form")
+	if data.Form == nil {
+		data.Form = map[string]string{}
+	}
+
+	return data
 }

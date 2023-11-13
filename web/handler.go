@@ -76,8 +76,11 @@ type Handler struct {
 
 func (h *Handler) Home() http.HandlerFunc {
 	type data struct {
+		SessionData
+
 		Posts []gothreadit.Post
 	}
+
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/home.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		pp, err := h.store.Posts()
@@ -86,6 +89,9 @@ func (h *Handler) Home() http.HandlerFunc {
 			return
 		}
 
-		tmpl.Execute(w, data{pp})
+		tmpl.Execute(w, data{
+			SessionData: GetSessionData(h.sessions, r.Context()),
+			Posts:       pp,
+		})
 	}
 }

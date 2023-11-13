@@ -23,6 +23,7 @@ type ThreadHandler struct {
 
 func (th *ThreadHandler) List() http.HandlerFunc {
 	type data struct {
+		SessionData
 		Threads []gothreadit.Thread
 	}
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/threads.html"))
@@ -32,23 +33,31 @@ func (th *ThreadHandler) List() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tmpl.Execute(w, data{Threads: tt})
+		tmpl.Execute(w, data{
+			SessionData: GetSessionData(th.sessions, r.Context()),
+			Threads:     tt,
+		})
 	}
 }
 
 func (th *ThreadHandler) Create() http.HandlerFunc {
 	type data struct {
+		SessionData
 		CSRF template.HTML
 	}
 
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/thread_create.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
-		tmpl.Execute(w, data{csrf.TemplateField(r)})
+		tmpl.Execute(w, data{
+			SessionData: GetSessionData(th.sessions, r.Context()),
+			CSRF:        csrf.TemplateField(r),
+		})
 	}
 }
 
 func (th *ThreadHandler) Show() http.HandlerFunc {
 	type data struct {
+		SessionData
 		CSRF   template.HTML
 		Thread gothreadit.Thread
 		Posts  []gothreadit.Post
@@ -71,8 +80,13 @@ func (th *ThreadHandler) Show() http.HandlerFunc {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+
 		tmpl.Execute(w, data{
-			csrf.TemplateField(r), t, pp})
+			GetSessionData(th.sessions, r.Context()),
+			csrf.TemplateField(r),
+			t,
+			pp,
+		})
 	}
 }
 
@@ -91,6 +105,8 @@ func (th *ThreadHandler) Store() http.HandlerFunc {
 			return
 		}
 
+		th.sessions.Put(r.Context(), "flash", "Your new thread has been created.")
+
 		http.Redirect(w, r, "/threads", http.StatusFound)
 	}
 }
@@ -108,6 +124,8 @@ func (th *ThreadHandler) Delete() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		th.sessions.Put(r.Context(), "flash", "The thread has been deleted")
 
 		http.Redirect(w, r, "/threads", http.StatusFound)
 	}
