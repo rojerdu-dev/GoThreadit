@@ -92,13 +92,21 @@ func (th *ThreadHandler) Show() http.HandlerFunc {
 
 func (th *ThreadHandler) Store() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		title := r.FormValue("title")
-		description := r.FormValue("description")
+		form := CreateThreadForm{
+			Title:       r.FormValue("title"),
+			Description: r.FormValue("description"),
+			Errors:      nil,
+		}
+		if !form.Validate() {
+			th.sessions.Put(r.Context(), "form", form)
+			http.Redirect(w, r, r.Referer(), http.StatusFound)
+			return
+		}
 
 		err := th.store.CreateThread(&gothreadit.Thread{
 			uuid.New(),
-			title,
-			description,
+			form.Title,
+			form.Description,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
