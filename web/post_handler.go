@@ -22,6 +22,8 @@ type PostHandler struct {
 
 func (ph *PostHandler) Create() http.HandlerFunc {
 	type data struct {
+		SessionData
+
 		CSRF   template.HTML
 		Thread gothreadit.Thread
 	}
@@ -42,12 +44,17 @@ func (ph *PostHandler) Create() http.HandlerFunc {
 			return
 		}
 
-		tmpl.Execute(w, data{csrf.TemplateField(r), t})
+		tmpl.Execute(w, data{
+			GetSessionData(ph.sessions, r.Context()),
+			csrf.TemplateField(r),
+			t,
+		})
 	}
 }
 
 func (ph *PostHandler) Show() http.HandlerFunc {
 	type data struct {
+		SessionData
 		CSRF     template.HTML
 		Thread   gothreadit.Thread
 		Post     gothreadit.Post
@@ -90,18 +97,26 @@ func (ph *PostHandler) Show() http.HandlerFunc {
 		}
 
 		tmpl.Execute(w, data{
-			CSRF:     csrf.TemplateField(r),
-			Thread:   t,
-			Post:     p,
-			Comments: cc,
+			SessionData: GetSessionData(ph.sessions, r.Context()),
+			CSRF:        csrf.TemplateField(r),
+			Thread:      t,
+			Post:        p,
+			Comments:    cc,
 		})
 	}
 }
 
 func (ph *PostHandler) Store() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		title := r.FormValue("title")
-		content := r.FormValue("content")
+		form := CreatePostForm{
+			Title:   r.FormValue("title"),
+			Content: r.FormValue("content"),
+		}
+		if !form.Validate() {
+			ph.sessions.Put(r.Context(), "form", form)
+			http.Redirect(w, r, r.Referer(), http.StatusFound)
+			return
+		}
 
 		idStr := chi.URLParam(r, "id")
 
@@ -120,8 +135,8 @@ func (ph *PostHandler) Store() http.HandlerFunc {
 		p := &gothreadit.Post{
 			ID:       uuid.New(),
 			ThreadID: t.ID,
-			Title:    title,
-			Content:  content,
+			Title:    form.Title,
+			Content:  form.Content,
 		}
 
 		err = ph.store.CreatePost(p)
@@ -129,6 +144,8 @@ func (ph *PostHandler) Store() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		ph.sessions.Put(r.Context(), "flash", "Your new post has been created")
 
 		http.Redirect(w, r, "/threads", http.StatusFound)
 	}
