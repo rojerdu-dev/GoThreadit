@@ -19,6 +19,7 @@ func NewHandler(store gothreadit.Store, sessions *scs.SessionManager, csrfKey []
 	threads := ThreadHandler{store, sessions}
 	posts := PostHandler{store, sessions}
 	comments := CommentsHandler{store, sessions}
+	users := UserHandler{store: store, sessions: sessions}
 
 	h.Use(middleware.Logger)
 	h.Use(csrf.Protect(csrfKey, csrf.Secure(false)))
@@ -38,6 +39,8 @@ func NewHandler(store gothreadit.Store, sessions *scs.SessionManager, csrfKey []
 		r.Post("/{threadID}/{postID}", comments.Store())
 	})
 	h.Get("/comments/{id}/vote", comments.Vote())
+	h.Get("/register", users.Register())
+	h.Post("/register", users.RegisterSubmit())
 
 	h.Get("/html", func(w http.ResponseWriter, r *http.Request) {
 		t := template.Must(template.New("layout.html").ParseGlob("templates/includes/*.html"))
