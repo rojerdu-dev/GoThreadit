@@ -16,15 +16,23 @@ func NewStore(dataSourceName string) (*Store, error) {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
 	}
 
+	//return &Store{
+	//	&ThreadStore{db},
+	//	&PostStore{db},
+	//	&CommentStore{db},
+	//}, nil
 	return &Store{
-		&ThreadStore{db},
-		&PostStore{db},
-		&CommentStore{db},
+		ThreadStore:  &ThreadStore{db},
+		PostStore:    &PostStore{db},
+		CommentStore: &CommentStore{db},
+		UserStore:    &UserStore{db},
 	}, nil
+
 }
 
 type Store struct {
 	*ThreadStore
 	*PostStore
 	*CommentStore
+	*UserStore
 }
